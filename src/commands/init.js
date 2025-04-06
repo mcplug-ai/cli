@@ -2,12 +2,29 @@ const inquirer = require("inquirer");
 const fs = require("fs-extra");
 const path = require("path");
 const chalk = require("chalk");
+const installDependencies = require("../utils/install-dependencies");
 
-async function init() {
+async function init(projectName) {
   try {
-    // Get project details from user
-    const answers = await inquirer.prompt([
-      {
+    // Validate project name if provided as argument
+    if (projectName) {
+      if (projectName.trim().length === 0) {
+        console.error(chalk.red("Error: Project name is required"));
+        process.exit(1);
+      }
+      // Check if the project name contains invalid characters
+      if (/[<>:"/\\|?*]/.test(projectName)) {
+        console.error(chalk.red("Error: Project name contains invalid characters"));
+        process.exit(1);
+      }
+    }
+
+    // Prepare questions array
+    const questions = [];
+
+    // Only ask for project name if not provided as an argument
+    if (!projectName) {
+      questions.push({
         type: "input",
         name: "projectName",
         message: "What is your project name?",
@@ -21,22 +38,30 @@ async function init() {
           }
           return true;
         }
-      },
-      {
-        type: "list",
-        name: "deploymentType",
-        message: "Select deployment platform:",
-        choices: [
-          { name: "Cloudflare Worker", value: "cloudflare-worker" },
-          {
-            name: "Cloudflare Durable Object",
-            value: "cloudflare-durable-object"
-          },
-          { name: "Hono", value: "hono", disabled: "Coming Soon" }
-        ],
-        default: "cloudflare-worker"
-      }
-    ]);
+      });
+    }
+
+    // Add deployment type selection
+    questions.push({
+      type: "list",
+      name: "deploymentType",
+      message: "Select deployment platform:",
+      choices: [
+        { name: "Cloudflare Worker", value: "cloudflare-worker" },
+        {
+          name: "Cloudflare Durable Object",
+          value: "cloudflare-durable-object"
+        },
+        { name: "Hono", value: "hono" }
+      ],
+      default: "cloudflare-worker"
+    });
+
+    // Get project details from user
+    const answers = await inquirer.prompt(questions);
+
+    // Use provided project name or the one from prompt
+    answers.projectName = projectName || answers.projectName;
 
     // Sanitize project name to avoid path issues
     const sanitizedProjectName = answers.projectName.trim().replace(/\s+/g, "-");
@@ -154,15 +179,39 @@ ${sanitizedProjectName}/
 ├── worker-configuration.d.ts
 └── wrangler.jsonc`)
       );
+    } else if (answers.deploymentType === "hono") {
+      console.log(
+        chalk.white(`
+${sanitizedProjectName}/
+├── src/
+│   └── index.ts
+├── package.json
+├── README.md
+├── tsconfig.json
+└── .env`)
+      );
     }
 
+    // Install dependencies
+    const { installed, packageManager } = await installDependencies(projectDir);
+
+    // Show next steps
     console.log(chalk.blue("\nNext steps:"));
-    console.log(
-      chalk.white(`
+
+    if (installed) {
+      console.log(
+        chalk.white(`
+1. cd ${sanitizedProjectName}
+2. ${packageManager} run dev`)
+      );
+    } else {
+      console.log(
+        chalk.white(`
 1. cd ${sanitizedProjectName}
 2. npm install
 3. npm run dev`)
-    );
+      );
+    }
   } catch (error) {
     console.error(chalk.red("Error:"), error.message);
     process.exit(1);

@@ -1,6 +1,6 @@
 {
   "name": "mcplug",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "CLI tool for MCP server development with @mcplug/server",
   "main": "src/index.js",
   "type": "commonjs",
@@ -30,7 +30,8 @@
     "chalk": "^4.1.2",
     "commander": "^13.1.0",
     "fs-extra": "^11.3.0",
-    "inquirer": "^8.2.6"
+    "inquirer": "^8.2.6",
+    "ora": "^5.4.1"
   },
   "devDependencies": {
     "jest": "^29.7.0"
