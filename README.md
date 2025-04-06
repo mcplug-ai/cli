@@ -12,42 +12,33 @@ MCPlug CLI simplifies the process of creating new MCP server projects by providi
 - 📦 Multiple deployment platform templates
   - Cloudflare Workers
   - Cloudflare Durable Objects
+  - Hono
   - More platforms coming soon!
 - 🔧 Automatic project configuration
+- 🔐 Secure random secret generation
+- 📦 Package manager selection (npm, yarn, pnpm, bun)
 - 📝 TypeScript support out of the box
 - 🌐 Streamable specification compatibility
 - 🏪 Designed for MCPlug marketplace publishing
-
-## Installation
-
-### Global Installation
-
-```bash
-npm install -g mcplug-cli
-```
-
-### Using npx (without installing)
-
-```bash
-npx mcplug-cli init
-```
 
 ## Usage
 
 ### Creating a New Project
 
 ```bash
-# If installed globally
-mcplug init
+# Create a new project with interactive prompts
+npx mcplug init
 
-# If using npx
-npx mcplug-cli init
+# Create a new project with a specified name
+npx mcplug init my-awesome-project
 ```
 
-Follow the interactive prompts to:
+The CLI will guide you through:
 
-1. Name your project
-2. Select your deployment platform
+1. Project name (if not provided as argument)
+2. Selecting your deployment platform
+3. Choosing whether to install dependencies
+4. Selecting your preferred package manager (npm, yarn, pnpm, or bun)
 
 ### Project Structure
 
@@ -73,6 +64,7 @@ your-project/
 ```
 your-project/
 ├── src/
+│   └── index.ts (with customized Durable Object class name)
 ├── .editorconfig
 ├── .prettierrc
 ├── package.json
@@ -82,20 +74,59 @@ your-project/
 └── wrangler.jsonc
 ```
 
+#### Hono Template
+
+```
+your-project/
+├── src/
+│   └── index.ts
+├── package.json
+├── README.md
+├── tsconfig.json
+└── .env
+```
+
 ### Development Workflow
 
-After creating your project:
+After creating your project, the CLI will provide you with next steps. If you chose to install dependencies, you can immediately start development:
+
+```bash
+# Navigate to your project directory
+cd your-project
+
+# Start development server
+npm run dev  # or your chosen package manager: yarn dev, pnpm dev, bun dev
+```
+
+If you chose not to install dependencies, you'll need to install them first:
 
 ```bash
 # Navigate to your project directory
 cd your-project
 
 # Install dependencies
-npm install
+npm install  # or your preferred package manager
 
 # Start development server
 npm run dev
 ```
+
+## Security
+
+The CLI automatically generates a secure random secret for your project:
+
+- For Cloudflare templates, it updates the `MCP_SECRET` in wrangler.jsonc
+- For Hono templates, it updates the `MCP_SECRET` in the .env file
+
+This ensures that each project has a unique, secure secret rather than using default placeholder values.
+
+## Customization
+
+For Cloudflare Durable Object templates, the CLI automatically customizes:
+
+- The Durable Object class name to match your project name (in PascalCase with "Durable" suffix)
+- The binding name in UPPER_SNAKE_CASE format
+- All related references in source files and configuration
 
 ## Templates
 
@@ -106,6 +137,10 @@ A lightweight template for deploying MCP servers on Cloudflare Workers. Ideal fo
 ### Cloudflare Durable Object
 
 A more robust template that includes Durable Objects for maintaining state across requests. Perfect for building MCP servers that need to track sessions and state while adhering to the streamable specification.
+
+### Hono
+
+A template for building MCP servers using the Hono framework, providing a lightweight, Express-like experience for Node.js deployments.
 
 ## The MCPlug Marketplace
 

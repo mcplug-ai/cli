@@ -3,6 +3,8 @@ const fs = require("fs-extra");
 const path = require("path");
 const chalk = require("chalk");
 const installDependencies = require("../utils/install-dependencies");
+const updateSecret = require("../utils/updateSecret");
+const updateDurableObjectName = require("../utils/updateDurableObjectName");
 
 async function init(projectName) {
   try {
@@ -119,6 +121,16 @@ async function init(projectName) {
       throw new Error("File copying failed or package.json was missing from the template.");
     }
 
+    // Generate and update secret
+    console.log(chalk.blue("\n🔑 Generating secure secret..."));
+    await updateSecret(projectDir, answers.deploymentType);
+
+    // Update Durable Object name if needed
+    if (answers.deploymentType === "cloudflare-durable-object") {
+      console.log(chalk.blue("\n🔄 Customizing Durable Object configuration..."));
+      await updateDurableObjectName(projectDir, sanitizedProjectName);
+    }
+
     // Update package.json with project details
     const packageJson = await fs.readJson(packageJsonPath);
 
@@ -144,7 +156,10 @@ async function init(projectName) {
     const wranglerPath = path.join(projectDir, "wrangler.jsonc");
     if (fs.existsSync(wranglerPath)) {
       let wranglerContent = await fs.readFile(wranglerPath, "utf8");
-      wranglerContent = wranglerContent.replace(/name = ".*"/, `name = "${sanitizedProjectName.toLowerCase()}"`);
+      wranglerContent = wranglerContent.replace(
+        /"name"\s*:\s*"[^"]*"/,
+        `"name": "${sanitizedProjectName.toLowerCase()}"`
+      );
       await fs.writeFile(wranglerPath, wranglerContent);
     }
 

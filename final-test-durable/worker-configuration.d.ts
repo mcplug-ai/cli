@@ -3,7 +3,7 @@
 declare namespace Cloudflare {
 	interface Env {
 		MCP_SECRET: string;
-		MY_DURABLE_MCP: DurableObjectNamespace<import('./src/index').MyDurableMcp>;
+		FINAL_TEST_DURABLE_DURABLE_MCP: DurableObjectNamespace<import('./src/index').FinalTestDurableDurable>;
 	}
 }
 interface Env extends Cloudflare.Env {}

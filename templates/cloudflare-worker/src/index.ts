@@ -1,8 +1,8 @@
-import { tool, createHandler, createDurableMcp } from '@mcplug/server/cloudflare';
+import { tool, createWorkerMcp } from '@mcplug/server/cloudflare';
 import { env } from 'cloudflare:workers';
 import { z } from 'zod';
 
-export default createHandler({
+export default createWorkerMcp({
 	secret: env.MCP_SECRET,
 	versions: {
 		'1.0.0': {

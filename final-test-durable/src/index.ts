@@ -2,8 +2,8 @@ import { tool, createWorkerMcp, createDurableMcp } from '@mcplug/server/cloudfla
 import { env } from 'cloudflare:workers';
 import { z } from 'zod';
 
-export class MyDurableMcp extends createDurableMcp({
-	name: 'MyDurableMcp',
+export class FinalTestDurableDurable extends createDurableMcp({
+	name: 'FinalTestDurableDurable',
 }) {
 	tools = {
 		'get-weather': tool('Use this tool to get the weather in a given city')
@@ -26,6 +26,6 @@ export class MyDurableMcp extends createDurableMcp({
 export default createWorkerMcp({
 	secret: env.MCP_SECRET,
 	versions: {
-		'1.0.0': 'MyDurableMcp',
+		'1.0.0': 'FINAL_TEST_DURABLE_DURABLE_MCP',
 	},
 });
