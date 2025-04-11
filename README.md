@@ -4,18 +4,12 @@ A command-line interface tool for bootstrapping MCP (Minecraft Custom Protocol) 
 
 ## Overview
 
-MCPlug CLI simplifies the process of creating new MCP server projects by providing templates for different deployment platforms. It's designed to help developers quickly set up the necessary boilerplate code so they can focus on building their server logic. Servers created with this CLI can be published to the MCPlug marketplace.
+MCPlug CLI simplifies the process of creating new MCP server projects. It's designed to help developers quickly set up the necessary boilerplate code so they can focus on building their server logic. Servers created with this CLI can be published to the MCPlug marketplace.
 
 ## Features
 
 - 🚀 Quick project scaffolding for MCP servers
-- 📦 Multiple deployment platform templates
-  - Cloudflare Workers
-  - Cloudflare Durable Objects
-  - Hono
-  - More platforms coming soon!
 - 🔧 Automatic project configuration
-- 🔐 Secure random secret generation
 - 📦 Package manager selection (npm, yarn, pnpm, bun)
 - 📝 TypeScript support out of the box
 - 🌐 Streamable specification compatibility
@@ -36,53 +30,22 @@ npx mcplug init my-awesome-project
 The CLI will guide you through:
 
 1. Project name (if not provided as argument)
-2. Selecting your deployment platform
-3. Choosing whether to install dependencies
-4. Selecting your preferred package manager (npm, yarn, pnpm, or bun)
+2. Choosing whether to install dependencies
+3. Selecting your preferred package manager (npm, yarn, pnpm, or bun)
 
 ### Project Structure
 
-After initialization, your project will be created with the following structure (varies by template):
-
-#### Cloudflare Worker Template
+After initialization, your project will be created with the following structure:
 
 ```
 your-project/
 ├── src/
 │   └── index.ts
-├── .editorconfig
-├── .prettierrc
+├── changelogs/
 ├── package.json
 ├── README.md
 ├── tsconfig.json
-├── worker-configuration.d.ts
-└── wrangler.jsonc
-```
-
-#### Cloudflare Durable Object Template
-
-```
-your-project/
-├── src/
-│   └── index.ts (with customized Durable Object class name)
-├── .editorconfig
-├── .prettierrc
-├── package.json
-├── README.md
-├── tsconfig.json
-├── worker-configuration.d.ts
-└── wrangler.jsonc
-```
-
-#### Hono Template
-
-```
-your-project/
-├── src/
-│   └── index.ts
-├── package.json
-├── README.md
-├── tsconfig.json
+├── vite.config.ts
 └── .env
 ```
 
@@ -111,36 +74,37 @@ npm install  # or your preferred package manager
 npm run dev
 ```
 
-## Security
+## Publishing Your MCP Server
 
-The CLI automatically generates a secure random secret for your project:
+### Prerequisites
 
-- For Cloudflare templates, it updates the `MCP_SECRET` in wrangler.jsonc
-- For Hono templates, it updates the `MCP_SECRET` in the .env file
+Before publishing your MCP server to the marketplace, make sure to:
 
-This ensures that each project has a unique, secure secret rather than using default placeholder values.
+1. **Update your token**: Replace the placeholder in your `.env` file with your actual MCPLUG_TOKEN from mcplug.ai
 
-## Customization
+   ```
+   MCPLUG_TOKEN="your-actual-token-here"
+   ```
 
-For Cloudflare Durable Object templates, the CLI automatically customizes:
+2. **Update the README**: Your README.md will be displayed on the marketplace, so make sure it contains:
 
-- The Durable Object class name to match your project name (in PascalCase with "Durable" suffix)
-- The binding name in UPPER_SNAKE_CASE format
-- All related references in source files and configuration
+   - Clear description of what your MCP server does
+   - Examples of how to use it
+   - Any configuration options
+   - Links to related resources
 
-## Templates
+3. **Document changes**: Add your changes to the `changelogs/` directory to keep track of updates and help users understand what's new.
 
-### Cloudflare Worker
+### Publishing
 
-A lightweight template for deploying MCP servers on Cloudflare Workers. Ideal for simple, stateless server implementations that follow the streamable specification.
+When you're ready to share your MCP server with the world:
 
-### Cloudflare Durable Object
+```bash
+# Use your preferred package manager
+npm run publish    # or yarn deploy, pnpm deploy, bun deploy
+```
 
-A more robust template that includes Durable Objects for maintaining state across requests. Perfect for building MCP servers that need to track sessions and state while adhering to the streamable specification.
-
-### Hono
-
-A template for building MCP servers using the Hono framework, providing a lightweight, Express-like experience for Node.js deployments.
+This command will build your project and publish it to the MCPlug marketplace where others can discover and use it.
 
 ## The MCPlug Marketplace
 

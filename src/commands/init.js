@@ -3,8 +3,6 @@ const fs = require("fs-extra");
 const path = require("path");
 const chalk = require("chalk");
 const installDependencies = require("../utils/install-dependencies");
-const updateSecret = require("../utils/updateSecret");
-const updateDurableObjectName = require("../utils/updateDurableObjectName");
 
 async function init(projectName) {
   try {
@@ -43,22 +41,6 @@ async function init(projectName) {
       });
     }
 
-    // Add deployment type selection
-    questions.push({
-      type: "list",
-      name: "deploymentType",
-      message: "Select deployment platform:",
-      choices: [
-        { name: "Cloudflare Worker", value: "cloudflare-worker" },
-        {
-          name: "Cloudflare Durable Object",
-          value: "cloudflare-durable-object"
-        },
-        { name: "Hono", value: "hono" }
-      ],
-      default: "cloudflare-worker"
-    });
-
     // Get project details from user
     const answers = await inquirer.prompt(questions);
 
@@ -73,11 +55,11 @@ async function init(projectName) {
     console.log(chalk.blue("\n📁 Creating project directory..."));
     await fs.ensureDir(projectDir);
 
-    // Copy template files based on deployment type
-    const templateDir = path.join(__dirname, "..", "..", "templates", answers.deploymentType);
+    // Copy template files
+    const templateDir = path.join(__dirname, "..", "..", "template");
 
     if (!fs.existsSync(templateDir)) {
-      throw new Error(`Template directory for ${answers.deploymentType} not found at ${templateDir}`);
+      throw new Error(`Template directory not found at ${templateDir}`);
     }
 
     // *** Debugging Start ***
@@ -91,7 +73,7 @@ async function init(projectName) {
     console.log(chalk.yellow(`[Debug] Project directory: ${projectDir}`));
     // *** Debugging End ***
 
-    console.log(chalk.blue(`\n📋 Copying ${answers.deploymentType} template files...`));
+    console.log(chalk.blue(`\n📋 Copying template files...`));
     try {
       await fs.copy(templateDir, projectDir);
       console.log(chalk.yellow("[Debug] fs.copy command finished."));
@@ -115,20 +97,7 @@ async function init(projectName) {
     if (!fs.existsSync(packageJsonPath)) {
       console.error(chalk.red(`Error: package.json not found in ${projectDir} after copying.`));
       console.error(chalk.yellow(`Template directory was: ${templateDir}`));
-      // Optionally list directory contents for debugging
-      // const dirContents = await fs.readdir(projectDir);
-      // console.error(chalk.yellow(`Contents of ${projectDir}:`), dirContents);
       throw new Error("File copying failed or package.json was missing from the template.");
-    }
-
-    // Generate and update secret
-    console.log(chalk.blue("\n🔑 Generating secure secret..."));
-    await updateSecret(projectDir, answers.deploymentType);
-
-    // Update Durable Object name if needed
-    if (answers.deploymentType === "cloudflare-durable-object") {
-      console.log(chalk.blue("\n🔄 Customizing Durable Object configuration..."));
-      await updateDurableObjectName(projectDir, sanitizedProjectName);
     }
 
     // Update package.json with project details
@@ -152,60 +121,22 @@ async function init(projectName) {
 
     await fs.writeFile(readmePath, readmeContent);
 
-    // Update wrangler.jsonc with project details
-    const wranglerPath = path.join(projectDir, "wrangler.jsonc");
-    if (fs.existsSync(wranglerPath)) {
-      let wranglerContent = await fs.readFile(wranglerPath, "utf8");
-      wranglerContent = wranglerContent.replace(
-        /"name"\s*:\s*"[^"]*"/,
-        `"name": "${sanitizedProjectName.toLowerCase()}"`
-      );
-      await fs.writeFile(wranglerPath, wranglerContent);
-    }
-
     console.log(chalk.green("\n✨ Project initialized successfully!"));
     console.log(chalk.blue("\nProject structure:"));
 
-    // Display project structure based on deployment type
-    if (answers.deploymentType === "cloudflare-worker") {
-      console.log(
-        chalk.white(`
+    // Display project structure
+    console.log(
+      chalk.white(`
 ${sanitizedProjectName}/
 ├── src/
 │   └── index.ts
-├── .editorconfig
-├── .prettierrc
+├── changelogs/
 ├── package.json
 ├── README.md
 ├── tsconfig.json
-├── worker-configuration.d.ts
-└── wrangler.jsonc`)
-      );
-    } else if (answers.deploymentType === "cloudflare-durable-object") {
-      console.log(
-        chalk.white(`
-${sanitizedProjectName}/
-├── src/
-├── .editorconfig
-├── .prettierrc
-├── package.json
-├── README.md
-├── tsconfig.json
-├── worker-configuration.d.ts
-└── wrangler.jsonc`)
-      );
-    } else if (answers.deploymentType === "hono") {
-      console.log(
-        chalk.white(`
-${sanitizedProjectName}/
-├── src/
-│   └── index.ts
-├── package.json
-├── README.md
-├── tsconfig.json
+├── vite.config.ts
 └── .env`)
-      );
-    }
+    );
 
     // Install dependencies
     const { installed, packageManager } = await installDependencies(projectDir);
@@ -227,6 +158,29 @@ ${sanitizedProjectName}/
 3. npm run dev`)
       );
     }
+
+    // Show information about MCPLUG_TOKEN and publishing
+    console.log(chalk.blue("\n📋 Important:"));
+    console.log(
+      chalk.white(`
+Before publishing your MCP server, make sure to:
+
+1. Update the ${chalk.yellow("MCPLUG_TOKEN")} in your ${chalk.cyan(".env")} file with your token from mcplug.ai
+2. Update the ${chalk.cyan("README.md")} with detailed information about your MCP server
+3. Add your changes to ${chalk.cyan("changelogs/")} directory to document your updates
+`)
+    );
+
+    console.log(chalk.blue("🚀 Publishing:"));
+    console.log(
+      chalk.white(`
+When you're ready to publish your MCP server to the marketplace:
+
+${chalk.cyan(`${installed ? packageManager : "npm"} run publish`)}
+
+This will build your project and publish it to mcplug.ai where others can discover and use it!
+`)
+    );
   } catch (error) {
     console.error(chalk.red("Error:"), error.message);
     process.exit(1);
