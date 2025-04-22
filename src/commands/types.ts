@@ -116,5 +116,3 @@ export default async function types(id: string, options: { output?: string }): P
     process.exit(1);
   }
 }
-
-await types("01JS4V4X1DVABP9RYHCTCMYHAX");
