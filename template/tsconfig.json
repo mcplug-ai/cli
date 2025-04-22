@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "strict": true,
+    "noImplicitAny": true,
     "skipLibCheck": true,
-    "types": ["node"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "exactOptionalPropertyTypes": true,
+    "lib": ["ESNext", "DOM"],
+    "types": ["node", "vitest/globals"]
   }
 }

@@ -1,14 +1,22 @@
-const inquirer = require("inquirer");
-const chalk = require("chalk");
-const ora = require("ora");
-const { spawn } = require("child_process");
+import inquirer from "inquirer";
+import chalk from "chalk";
+import ora from "ora";
+import { spawn } from "child_process";
+
+/**
+ * Response from the installDependencies function
+ */
+interface InstallResponse {
+  installed: boolean;
+  packageManager: string | null;
+}
 
 /**
  * Prompt user if they want to install dependencies and with which package manager
  * @param {string} projectDir - The directory where the project was created
- * @returns {Promise<{installed: boolean, packageManager: string|null}>} - Returns install status and package manager used
+ * @returns {Promise<InstallResponse>} - Returns install status and package manager used
  */
-async function installDependencies(projectDir) {
+async function installDependencies(projectDir: string): Promise<InstallResponse> {
   try {
     // Ask if user wants to install dependencies
     const { shouldInstall } = await inquirer.prompt([
@@ -50,7 +58,8 @@ async function installDependencies(projectDir) {
     await runInstallCommand(packageManager, projectDir, spinner);
     return { installed: true, packageManager };
   } catch (error) {
-    console.error(chalk.red("Error installing dependencies:"), error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red("Error installing dependencies:"), errorMessage);
     return { installed: false, packageManager: null };
   }
 }
@@ -62,11 +71,11 @@ async function installDependencies(projectDir) {
  * @param {ora.Ora} spinner - The spinner instance
  * @returns {Promise<void>}
  */
-function runInstallCommand(packageManager, projectDir, spinner) {
+function runInstallCommand(packageManager: string, projectDir: string, spinner: ora.Ora): Promise<void> {
   return new Promise((resolve, reject) => {
     // Determine the installation command
     const installCmd = packageManager;
-    const args = ["install"];
+    const args: string[] = ["install"];
 
     if (packageManager === "yarn" || packageManager === "bun") {
       // yarn and bun don't need the "install" command
@@ -84,7 +93,7 @@ function runInstallCommand(packageManager, projectDir, spinner) {
     let stderrData = "";
 
     // Capture stdout
-    child.stdout.on("data", (data) => {
+    child.stdout?.on("data", (data) => {
       stdoutData += data.toString();
       // Update spinner text occasionally to show progress
       if (stdoutData.includes("added") || stdoutData.includes("packages")) {
@@ -93,7 +102,7 @@ function runInstallCommand(packageManager, projectDir, spinner) {
     });
 
     // Capture stderr
-    child.stderr.on("data", (data) => {
+    child.stderr?.on("data", (data) => {
       stderrData += data.toString();
       // Only update for actual errors, not warnings
       if (!stderrData.includes("WARN") && stderrData.trim().length > 0) {
@@ -109,7 +118,7 @@ function runInstallCommand(packageManager, projectDir, spinner) {
       } else {
         spinner.fail(`Failed to install dependencies with ${packageManager}`);
         console.error(chalk.red("Error output:"), stderrData || stdoutData);
-        reject(new Error(`Process exited with code ${code}`));
+        reject(new Error(`Process exited with code ${code ?? 1}`));
       }
     });
 
@@ -122,4 +131,4 @@ function runInstallCommand(packageManager, projectDir, spinner) {
   });
 }
 
-module.exports = installDependencies;
+export default installDependencies;

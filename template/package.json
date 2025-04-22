@@ -1,23 +1,27 @@
 {
   "name": "my-mcp-server",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
   "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "publish": "npx mcplug publish"
+    "publish": "npx mcplug publish",
+    "test": "vitest",
+    "test:ui": "vitest --ui"
   },
   "devDependencies": {
-    "@types/node": "^20.11.17"
+    "@types/node": "^20.11.17",
+    "vitest": "latest",
+    "@vitest/ui": "latest",
+    "vite": "latest",
+    "wrangler": "latest",
+    "@mcplug/vite": "latest",
+    "cloudflare": "latest",
+    "@cloudflare/vite-plugin": "latest"
   },
   "dependencies": {
     "@mcplug/server": "latest",
-    "@mcplug/vite": "latest",
-    "wrangler": "latest",
-    "cloudflare": "latest",
-    "vite": "latest",
-    "@cloudflare/vite-plugin": "latest",
     "zod": "^3.24.2"
   }
 }

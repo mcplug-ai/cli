@@ -2,7 +2,7 @@ import { tool, prompt, resource, type CreateCtx } from "@mcplug/server";
 import { z } from "zod";
 
 // Context will be available in the handle functions. If you do not need it, you can remove it or comment it out.
-export const createContext = (({ env, sessionId, userId }) => {
+export const createCtx = (({ env, sessionId, userId }) => {
   return {
     hello: "world"
   };
